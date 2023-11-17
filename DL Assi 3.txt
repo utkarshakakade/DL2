@@ -1,0 +1,75 @@
+from sklearn import metrics
+import numpy as np
+import pandas as pd
+import random
+import tensorflow as ts
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import accuracy_score
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Flatten , Dense, Conv2D, MaxPooling2D
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.datasets import mnist
+
+# learning & Preprocessing of data
+
+(X_train,Y_train), (X_test,Y_test) = mnist.load_data()
+
+print(X_train.shape)
+
+X_train[0].min() ,X_train[0].max()
+
+X_train = (X_train - 0.0)/ (255.0 - 0.0)
+X_test = (X_test - 0.0) / (255.0 - 0.0)
+X_train[0].min(), X_train[0].max()
+
+#Images
+
+def plot_digit(image , digit ,plt, i):
+  plt.subplot(2,5, i+1)
+  plt.imshow(image, cmap = plt.get_cmap('grey'))
+  plt.title(f"Digit : {digit}")
+  plt.Xticks([])
+  plt.Y_ticks([])
+  plt.figure(figsize(10,10))
+
+  for i in range(10):
+    plot_digit(X_train[i], Y_train[i],plt ,i)
+    plt.show()
+
+X_train = X_train.reshape((X_train.shape + (1,)))
+X_test = X_test.reshape((X_test.shape + (1,)))
+Y_train[0:20]
+
+model = Sequential([
+    Conv2D(32,(3,3), activation = "relu", input_shape =(28,28,1)),
+    MaxPooling2D(2,2),
+    Flatten(),
+    Dense(100, activation= "relu"),
+    Dense(10, activation = "softmax")
+])
+# Model Architecture
+optimizer = SGD(learning_rate = 0.01, momentum = 0.9)
+model.compile(
+    optimizer = optimizer,
+    loss = "sparse_categorical_crossentropy",
+    metrics = ["accuracy"]
+)
+model.summary()
+
+#MOdel performace
+# Epochs===specifies the number of times the model will iterate over the entire training dataset during training.
+# batch_size === determines how many training examples are processed in each iteration (mini-batch) during training
+model.fit(X_train, Y_train, epochs = 10, batch_size = 32)
+
+n= random.randint(0,9993)
+plt.imshow(X_test[n])
+plt.show()
+
+predicted_value = model.predict(X_test)
+print("Predicted value is : %d " %np.argmax(predicted_value[n]))
+
+score = model.evaluate(X_train,Y_train,verbose=0)
+print("loss : ",score[0])
+print("Accuracy : ",score[1])
